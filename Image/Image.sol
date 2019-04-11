@@ -58,6 +58,7 @@ contract SampleImage{
         totalFees += defaultPrice;
         p.owner = msg.sender;
         p.price = defaultPrice;
+	p.coordinate = coordinate;
         u.ImageOwned++;
     } else {
         uint increment = p.price * incrementRate / 100; 
@@ -74,6 +75,7 @@ contract SampleImage{
         u.ImageOwned++;
         p.price = newPrice;
         p.owner = msg.sender;
+	p.coordinate = coordinate;
       }
       successCount++;
     
