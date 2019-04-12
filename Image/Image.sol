@@ -1,30 +1,32 @@
 pragma solidity ^0.5.2;
 
 
-contract SampleImage{
+contract Image{
     
     struct User {
-    uint32 ImageOwned;
+    uint32 coordinateOwned;
     uint balance;
     uint earning;
   }
   
-  struct Image {
+  struct CoordinatorInfo {
     address owner;
     uint price;
   }
   
-  uint constant public lastStageIncomeThreshold = 10000000000;
-  uint32 constant public lastStageDuratio = 28800;
+  struct ImageInfo{
+      string imagehex;
+      bytes32 coordinator;
+  }
+  
   uint constant public defaultPrice = 20000000;
   uint8 constant public incrementRate = 35;
   uint8 constant public feeRatio = 25;
   
-  address public lastPainter;
   
-    
   mapping(address => User) users;
-  mapping(bytes32 => Image) image;
+  mapping(bytes32 => CoordinatorInfo) coordinate;
+  mapping(address => ImageInfo) image;
    
    
    function updateOwnerInfo(address addr, uint _balance, uint _earning) public {
@@ -39,17 +41,18 @@ contract SampleImage{
         }
     }
   
-  function buyImageTest(string memory ImageToBuy) public payable returns (uint) {
+  function buyCoordinator(bytes32 coordinator, string memory coimage) public payable returns (uint) {
    
-    bytes32 input = stringToBytes32(ImageToBuy);
+    
+    bytes32 input = coordinator;
     
     uint totalSpent = 0;
     uint totalFees = 0;
     uint32 successCount = 0;
     
     User storage u = users[msg.sender];
-    bytes32 coordinate = input;
-    Image storage p = image[coordinate];
+    bytes32 space = input;
+    CoordinatorInfo storage p = coordinate[space];
     if (p.owner == address(0)) {
         if (msg.value < totalSpent + defaultPrice) {
             revert();
@@ -58,8 +61,8 @@ contract SampleImage{
         totalFees += defaultPrice;
         p.owner = msg.sender;
         p.price = defaultPrice;
-	p.coordinate = coordinate;
-        u.ImageOwned++;
+        
+        u.coordinateOwned++;
     } else {
         uint increment = p.price * incrementRate / 100; 
         uint newPrice = p.price + increment;
@@ -72,18 +75,28 @@ contract SampleImage{
         uint ownerEarning = increment * (100 - feeRatio) / 100;
         
         updateOwnerInfo(p.owner, p.price + ownerEarning, ownerEarning);
-        u.ImageOwned++;
+        u.coordinateOwned++;
         p.price = newPrice;
         p.owner = msg.sender;
-	p.coordinate = coordinate;
+       
       }
       successCount++;
+      
+    updateImage(msg.sender, coimage, coordinator);
     
     if (msg.value > totalSpent) {
       u.balance += (msg.value - totalSpent);
     }
     return u.balance;
   }
+  
+  
+  function updateImage(address addr, string memory imagehex, bytes32 coordinator) public  {
+    ImageInfo storage img = image[addr];
+    img.imagehex = imagehex;
+    img.coordinator = coordinator;
+  }
+  
 }
 
 
